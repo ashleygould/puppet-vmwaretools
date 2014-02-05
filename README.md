@@ -19,7 +19,7 @@ Actions:
 OS Support:
 
 * RedHat family - tested on CentOS 5.5+, CentOS 6.2+, RHEL 5.9, RHEL 6.4, and OEL 5.5+
-* SuSE family   - untested (initial support for yumrepo) (patches welcome)
+* SuSE family   - dependancy on forge module darin/zypprepo. tested on SLES 10, SLES11.1, SLES11.2, SLES11.3
 * Ubuntu        - presently unsupported (patches welcome)
 
 Class documentation is available via puppetdoc.

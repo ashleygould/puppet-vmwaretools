@@ -70,6 +70,12 @@
 #   doing.
 #   Default: auto-set, platform specific
 #
+# [*package_provider*]
+#   'provider' attribute for package resources.
+#   The specific backend to use for this `package' resource. Puppet will
+#   usually discover the appropriate provider for your platform.
+#   Default: auto-set, platform specific
+#
 # [*service_ensure*]
 #   Ensure if service is running or stopped.
 #   Default: running
@@ -97,7 +103,7 @@
 # === Actions:
 #
 # Removes old VMwareTools package or runs vmware-uninstall-tools.pl if found.
-# Installs a vmware YUM repository.
+# Installs a vmware YUM repository (or Zypper repository on Suse).
 # Installs the OSP.
 # Starts the vmware-tools service.
 #
@@ -136,6 +142,7 @@ class vmwaretools (
   $ensure                = $vmwaretools::params::ensure,
   $autoupgrade           = $vmwaretools::params::safe_autoupgrade,
   $package               = $vmwaretools::params::package,
+  $package_provider      = $vmwaretools::params::package_provider,
   $service_ensure        = $vmwaretools::params::service_ensure,
   $service_name          = $vmwaretools::params::service_name,
   $service_enable        = $vmwaretools::params::safe_service_enable,
@@ -258,7 +265,8 @@ class vmwaretools (
       }
 
       package { $package_real :
-        ensure  => $package_ensure,
+        ensure   => $package_ensure,
+        provider => $package_provider,
       }
 
       file_line { 'disable-tools-version':

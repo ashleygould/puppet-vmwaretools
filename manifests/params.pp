@@ -70,6 +70,15 @@ class vmwaretools::params {
     default => $::vmwaretools_package,
   }
 
+  $package_provider = $::vmwaretools_package_provider ? {
+    undef   => $::osfamily ? {
+      'Suse'   => 'zypper',
+      'RedHat' => 'yum',
+      default  => undef,
+    },
+    default => $::vmwaretools_package_provider,
+  }
+
   $service_ensure = $::vmwaretools_service_ensure ? {
     undef   => 'running',
     default => $::vmwaretools_service_ensure,
@@ -157,8 +166,16 @@ class vmwaretools::params {
     $majdistrelease = regsubst($::operatingsystemrelease,'^(\d+)\.(\d+)','\1')
   }
 
+  if ($::operatingsystem == 'SLES') and ($majdistrelease == '11') {
+    $distrelease = $::operatingsystemrelease
+  } else {
+    $distrelease = $majdistrelease
+  }
+
+
   case $::osfamily {
     'RedHat': {
+
       case $::operatingsystem {
         'Fedora': {
           fail("Unsupported platform: ${::operatingsystem}")
@@ -176,6 +193,7 @@ class vmwaretools::params {
           $service_hasstatus_5x = true
         }
       }
+
       $yum_basearch_4x = $::architecture ? {
         'i386'  => 'i686',
         'i586'  => 'i686',
@@ -188,6 +206,7 @@ class vmwaretools::params {
       }
       $baseurl_string = 'rhel'  # must be lower case
     }
+
     'Suse': {
       $package_name_4x = 'vmware-tools-nox'
       $package_name_5x = [
@@ -206,7 +225,7 @@ class vmwaretools::params {
         'i386'  => 'i586',
         default => $::architecture,
       }
-      $baseurl_string = 'suse'  # must be lower case
+      $baseurl_string = 'sles'  # must be lower case
     }
     default: {
       fail("Unsupported platform: ${::operatingsystem}")

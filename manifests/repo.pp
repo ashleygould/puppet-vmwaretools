@@ -57,7 +57,7 @@
 #
 # === Requires:
 #
-# Nothing.
+# zypprepo type from module 'zypprepo'.  See: https://forge.puppetlabs.com/darin/zypprepo
 #
 # === Sample Usage:
 #
@@ -117,25 +117,38 @@ class vmwaretools::repo (
         'SuSE': {
           if ( $yum_path == $vmwaretools::params::yum_path ) or ( $just_prepend_yum_path == true ) {
             $gpgkey_url  = "${yum_server}${yum_path}/keys/"
-            $baseurl_url = "${yum_server}${yum_path}/esx/${tools_version}/${vmwaretools::params::baseurl_string}${vmwaretools::params::majdistrelease}/${yum_basearch}/"
+            $baseurl_url = "${yum_server}${yum_path}/esx/${tools_version}/${vmwaretools::params::baseurl_string}${vmwaretools::params::distrelease}/${yum_basearch}/"
           } else {
             $gpgkey_url  = "${yum_server}${yum_path}/"
             $baseurl_url = "${yum_server}${yum_path}/"
           }
 
-          yumrepo { 'vmware-tools':
-            descr          => "VMware Tools ${tools_version} - ${vmwaretools::params::baseurl_string}${vmwaretools::params::majdistrelease} ${yum_basearch}",
-            enabled        => $yumrepo_enabled,
-            gpgcheck       => '1',
-            # gpgkey has to be a string value with an indented second line
-            # per http://projects.puppetlabs.com/issues/8867
-            gpgkey         => "${gpgkey_url}VMWARE-PACKAGING-GPG-DSA-KEY.pub\n    ${gpgkey_url}VMWARE-PACKAGING-GPG-RSA-KEY.pub",
-            baseurl        => $baseurl_url,
-            priority       => $priority,
-            protect        => $protect,
-            proxy          => $proxy,
-            proxy_username => $proxy_username,
-            proxy_password => $proxy_password,
+          if $::osfamily == 'Suse' {
+            zypprepo { 'vmware-tools':
+              descr          => "VMware Tools ${tools_version} - ${vmwaretools::params::baseurl_string}${vmwaretools::params::distrelease} ${yum_basearch}",
+              enabled        => $yumrepo_enabled,
+              type           => 'rpm-md',
+              autorefresh    => '1',
+              gpgcheck       => '0',
+              gpgkey         => 'absent',
+              baseurl        => $baseurl_url,
+              priority       => $priority,
+            }
+          } else {
+            yumrepo { 'vmware-tools':
+              descr          => "VMware Tools ${tools_version} - ${vmwaretools::params::baseurl_string}${vmwaretools::params::distrelease} ${yum_basearch}",
+              enabled        => $yumrepo_enabled,
+              gpgcheck       => '1',
+              # gpgkey has to be a string value with an indented second line
+              # per http://projects.puppetlabs.com/issues/8867
+              gpgkey         => "${gpgkey_url}VMWARE-PACKAGING-GPG-DSA-KEY.pub\n    ${gpgkey_url}VMWARE-PACKAGING-GPG-RSA-KEY.pub",
+              baseurl        => $baseurl_url,
+              priority       => $priority,
+              protect        => $protect,
+              proxy          => $proxy,
+              proxy_username => $proxy_username,
+              proxy_password => $proxy_password,
+            }
           }
         }
         default: { }
